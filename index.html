@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Buddy AI</title>
+<style>
+:root{--bg:#f7f8fc;--fg:#161a2e;--mut:#555b73;--card:#fff;--bd:#dfe3f0;--pri:#4f46e5;--onpri:#fff;--ok:#0a7a3d;--bad:#b42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1120;--fg:#eef0fb;--mut:#a9aec6;--card:#181b30;--bd:#2c3050;--pri:#818cf8;--onpri:#0f1120;--ok:#4ade80;--bad:#f87171}}
+:root[data-theme="dark"]{--bg:#0f1120;--fg:#eef0fb;--mut:#a9aec6;--card:#181b30;--bd:#2c3050;--pri:#818cf8;--onpri:#0f1120;--ok:#4ade80;--bad:#f87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--card);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{font-weight:800;font-size:1.1rem;background:none;border:0;color:var(--fg);cursor:pointer}
+.brand span{color:var(--pri)}
+.bar{display:flex;gap:8px;align-items:center}
+button,select,textarea{font:inherit;color:var(--fg)}
+.btn{background:var(--pri);color:var(--onpri);border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer;min-height:44px}
+.btn:disabled{opacity:.6}
+.ghost{background:var(--card);color:var(--fg);border:1px solid var(--bd)}
+select{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px;min-height:44px}
+main{max-width:820px;margin:0 auto;padding:20px 16px 40px}
+.hero{text-align:center;padding:32px 0}
+.hero h1{font-size:2rem;line-height:1.2;margin:0 0 12px}
+.hero p{color:var(--mut);max-width:520px;margin:0 auto 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;text-align:left}
+.card h3{margin:0 0 6px}.card p{margin:0;color:var(--mut)}
+button.card{cursor:pointer;width:100%}
+textarea{width:100%;min-height:160px;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);resize:vertical}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.out{margin-top:16px;white-space:pre-wrap}
+.err{color:var(--bad);font-weight:600;margin-top:12px}
+.mut{color:var(--mut);font-size:.9rem}
+.q{margin:14px 0}.q label{display:block;padding:10px;border:1px solid var(--bd);border-radius:10px;margin:6px 0;cursor:pointer;background:var(--card)}
+.good{border-color:var(--ok)!important}.wrong{border-color:var(--bad)!important}
+.fc{min-height:160px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:1.2rem;font-weight:600;cursor:pointer;width:100%}
+footer{max-width:820px;margin:0 auto;padding:0 16px 32px;color:var(--mut);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <button class="brand" id="brand">Study Buddy <span>AI</span></button>
+  <div class="bar">
+    <select id="lang" aria-label="Language"><option value="en">English</option><option value="pt">Português</option></select>
+    <button class="btn ghost" id="theme" aria-label="Theme">◐</button>
+  </div>
+</header>
+<main id="app"></main>
+<footer id="foot"></footer>
+<script>
+const T={
+en:{tag:"Your personal AI study companion.",hero:"Study smarter, not harder",sub:"Summaries, simple explanations, quizzes and flashcards from your own study material.",start:"Open dashboard",dash:"Dashboard",hi:"Choose a study tool",
+sum:"AI Summarizer",sumD:"Paste text, get a clear summary.",exp:"Explain This",expD:"Ask about a hard topic, get a simple explanation.",quiz:"Quiz Generator",quizD:"Multiple-choice questions with answers and explanations.",fc:"Flashcards",fcD:"Flip through cards made from your material.",
+run:"Generate",paste:"Paste your study text here…",ask:"Type a question or topic…",short:"Short",detailed:"Detailed",short2:"Summary length",
+tooShort:"Please enter a bit more text.",tooLong:"Text is too long (max 8,000 characters).",loading:"Working…",err:"Something went wrong. Please try again.",noBackend:"The AI server is not connected yet. Follow the deployment steps to enable it.",
+check:"Check answers",score:"Score",reveal:"Tap the card to flip",prev:"Previous",next:"Next",back:"← Back",left:"Free plan: limited AI requests (coming soon)",
+notice:"Privacy: your text is sent to an AI service to produce results. Do not enter sensitive personal data. AI can make mistakes — always verify important information with your teacher or textbooks."},
+pt:{tag:"O teu companheiro de estudo com IA.",hero:"Estuda de forma mais inteligente",sub:"Resumos, explicações simples, quizzes e flashcards a partir do teu material de estudo.",start:"Abrir painel",dash:"Painel",hi:"Escolhe uma ferramenta de estudo",
+sum:"Resumidor com IA",sumD:"Cola um texto e recebe um resumo claro.",exp:"Explica Isto",expD:"Pergunta sobre um tema difícil e recebe uma explicação simples.",quiz:"Gerador de Quiz",quizD:"Perguntas de escolha múltipla com respostas e explicações.",fc:"Flashcards",fcD:"Vira cartões feitos a partir do teu material.",
+run:"Gerar",paste:"Cola aqui o teu texto de estudo…",ask:"Escreve uma pergunta ou tema…",short:"Curto",detailed:"Detalhado",short2:"Tamanho do resumo",
+tooShort:"Por favor, escreve um pouco mais de texto.",tooLong:"Texto demasiado longo (máx. 8.000 caracteres).",loading:"A trabalhar…",err:"Algo correu mal. Tenta novamente.",noBackend:"O servidor de IA ainda não está ligado. Segue os passos de publicação para o ativar.",
+check:"Verificar respostas",score:"Pontuação",reveal:"Toca no cartão para virar",prev:"Anterior",next:"Seguinte",back:"← Voltar",left:"Plano gratuito: pedidos de IA limitados (em breve)",
+notice:"Privacidade: o teu texto é enviado a um serviço de IA para gerar resultados. Não insiras dados pessoais sensíveis. A IA pode errar — confirma sempre informação importante com o professor ou os manuais."}};
+let lang="en",view="home";
+try{lang=localStorage.getItem("sb-lang")||((navigator.language||"").startsWith("pt")?"pt":"en")}catch(e){}
+const t=k=>T[lang][k]||T.en[k]||k;
+const $=s=>document.querySelector(s);
+function el(tag,attrs,...kids){const e=document.createElement(tag);for(const k in(attrs||{})){if(k==="on")for(const ev in attrs.on)e.addEventListener(ev,attrs.on[ev]);else if(k==="text")e.textContent=attrs[k];else e.setAttribute(k,attrs[k])}kids.flat().forEach(c=>e.append(c));return e}
+const TOOLS=["sum","exp","quiz","fc"];
+function render(){
+  document.documentElement.lang=lang;$("#lang").value=lang;
+  $("#foot").textContent=t("notice");
+  const app=$("#app");app.replaceChildren();
+  if(view==="home"){
+    app.append(el("section",{class:"hero"},el("h1",{text:t("hero")}),el("p",{text:t("tag")+" "+t("sub")}),el("button",{class:"btn",text:t("start"),on:{click:()=>go("dash")}})),
+      el("div",{class:"grid"},TOOLS.map(k=>el("div",{class:"card"},el("h3",{text:t(k)}),el("p",{text:t(k+"D")})))));
+  }else if(view==="dash"){
+    app.append(el("h2",{text:t("dash")}),el("p",{class:"mut",text:t("hi")}),
+      el("div",{class:"grid"},TOOLS.map(k=>el("button",{class:"card",on:{click:()=>go(k)}},el("h3",{text:t(k)}),el("p",{text:t(k+"D")})))),
+      el("p",{class:"mut",text:t("left")}));
+  }else tool(app,view);
+}
+function go(v){view=v;render();scrollTo(0,0)}
+function tool(app,k){
+  const ta=el("textarea",{maxlength:"9000","aria-label":t(k),placeholder:k==="exp"?t("ask"):t("paste")});
+  const det=el("select",{"aria-label":t("short2")},el("option",{value:"short",text:t("short")}),el("option",{value:"detailed",text:t("detailed")}));
+  const out=el("div",{class:"out","aria-live":"polite"});
+  const btn=el("button",{class:"btn",text:t("run")});
+  btn.addEventListener("click",async()=>{
+    const text=ta.value.trim();out.replaceChildren();
+    if(text.length<(k==="exp"?3:20))return out.append(el("div",{class:"err",text:t("tooShort")}));
+    if(text.length>8000)return out.append(el("div",{class:"err",text:t("tooLong")}));
+    btn.disabled=true;out.append(el("p",{text:t("loading"),class:"mut"}));
+    try{
+      let r;try{r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:k,text,lang,detail:det.value})})}catch(e){throw new Error("net")}
+      const ct=r.headers.get("content-type")||"";
+      if(!ct.includes("json"))throw new Error("nobackend");
+      const d=await r.json();if(!r.ok||d.error)throw new Error("api");
+      out.replaceChildren();show(k,d.result,out);
+    }catch(e){out.replaceChildren(el("div",{class:"err",text:e.message==="nobackend"?t("noBackend"):t("err")}))}
+    btn.disabled=false;
+  });
+  app.append(el("button",{class:"btn ghost",text:t("back"),on:{click:()=>go("dash")}}),el("h2",{text:t(k)}),el("p",{class:"mut",text:t(k+"D")}),ta,el("div",{class:"row"},k==="sum"?det:"",btn),out);
+}
+function show(k,res,out){
+  if(k==="sum"||k==="exp")return out.append(document.createTextNode(String(res)));
+  if(k==="quiz"){
+    const qs=(res.questions||[]);const sel=[];const fb=[];
+    qs.forEach((q,i)=>{const box=el("div",{class:"q"},el("strong",{text:(i+1)+". "+q.q}));
+      q.options.forEach((o,j)=>box.append(el("label",{},el("input",{type:"radio",name:"q"+i,on:{change:()=>sel[i]=j}})," "+o)));
+      const f=el("div",{class:"mut"});fb.push(f);box.append(f);out.append(box)});
+    const res2=el("p",{class:"out"});
+    out.append(el("button",{class:"btn",text:t("check"),on:{click:()=>{let s=0;
+      qs.forEach((q,i)=>{const ok=sel[i]===q.answer;if(ok)s++;fb[i].textContent=(ok?"✓ ":"✗ ")+q.options[q.answer]+" — "+q.explanation;fb[i].style.color=ok?"var(--ok)":"var(--bad)"});
+      res2.textContent=t("score")+": "+s+"/"+qs.length}}}),res2);
+  }else{
+    const cards=res.cards||[];let i=0,flip=false;
+    const c=el("button",{class:"card fc","aria-live":"polite"});const n=el("p",{class:"mut"});
+    const paint=()=>{c.textContent=flip?cards[i].back:cards[i].front;n.textContent=(i+1)+" / "+cards.length+" · "+t("reveal")};
+    c.addEventListener("click",()=>{flip=!flip;paint()});paint();
+    out.append(c,n,el("div",{class:"row"},el("button",{class:"btn ghost",text:t("prev"),on:{click:()=>{i=(i-1+cards.length)%cards.length;flip=false;paint()}}}),el("button",{class:"btn",text:t("next"),on:{click:()=>{i=(i+1)%cards.length;flip=false;paint()}}})));
+  }
+}
+$("#brand").onclick=()=>go("home");
+$("#lang").onchange=e=>{lang=e.target.value;try{localStorage.setItem("sb-lang",lang)}catch(x){}render()};
+$("#theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0f1120";r.setAttribute("data-theme",d?"light":"dark")};
+render();
+</script>
+</body>
+</html>
